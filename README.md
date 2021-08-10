@@ -1,6 +1,9 @@
 # TVM_interpolation_tools
 This tool help interpolate velocity model from [Taiwan Velocity Models](https://tecdc.earth.sinica.edu.tw/TWtomo/VerticalProfile.php).
 
+## Data and Citation
+[Model Information](https://tecdc.earth.sinica.edu.tw/TWtomo/ModelInfo.php)
+
 ## Prerequisite
 - [C shell](https://help.sap.com/viewer/d1d04c0d65964a9b91589ae7afc1bd45/2020.0/en-US/dffd295dc2b0462ca9e265e32f30d940.html)
 - [GMT6](https://github.com/GenericMappingTools/gmt)
