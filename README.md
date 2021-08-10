@@ -47,8 +47,8 @@ The figures will be stored in the /plot/[velocity model]/.
 ### results
 <table>
    <tr>
-      <td> <img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/mapview/Vp/10m/RAU1995_Vp_I10m_T0.25_blockmean.mapview.jpg?raw=true" width="40%"></td>
-      <td><img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/mapview/Vp/10m/RAU1995.mapview.compare.jpg?raw=true" width="40%"></td>
+      <td> <img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/mapview/Vp/10m/RAU1995_Vp_I10m_T0.25_blockmean.mapview.jpg?raw=true" width="100%"></td>
+      <td><img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/mapview/Vp/10m/RAU1995.mapview.compare.jpg?raw=true" width="100%"></td>
    </tr>
    <tr>
       <td>mapview</td>
