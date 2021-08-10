@@ -1,0 +1,64 @@
+#!/bin/csh
+
+# Input arguments
+if($#argv != 4) then
+  echo
+  echo "mapview_compare.gmt [model.txt] [marker_size1] [model.txt.interpolateion] [marker_size2]"
+  echo "-EX: mapview_compare.gmt ../data/RAU1995/RAU1995.txt.data 0.1 ../statistics/RAU1995/Vp/10m/RAU1995_Vp_I10m_T0.25_blockmean.txt 0.01"
+  echo "-It will draw a compare mapview of velocity model."
+  echo
+  exit 1
+endif
+
+# Parameters settings
+set raw_file = $1
+set marker_size_raw = $2
+set input_file = $3
+set marker_size_interpolated = $4
+set plot_type = mapview
+
+# Path
+set base_dir = `pwd | awk -F'/plot' '{print $1}'`
+set raw_file_tmp = `echo $raw_file | awk -F'data/' '{print $2}'`
+set raw_file_path = $base_dir/data/$raw_file_tmp
+set input_file_tmp = `echo $input_file | awk -F'statistics/' '{print $2}'`
+set input_file_path = $base_dir/statistics/$input_file_tmp
+set title = `echo $1 | awk -F'/' '{print $NF}' | awk -F'.txt' '{print $1}'`
+set model_name = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $1}'`
+set velocity_type = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $2}'`
+set grid_increment = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $3}'`
+set output_dir = $base_dir/plot/$model_name
+set plot_type_dir = $output_dir/$plot_type
+set velocity_type_folder = $plot_type_dir/$velocity_type
+set grid_increment_folder = $velocity_type_folder/$grid_increment
+if ( ! -d $output_dir ) mkdir $output_dir
+if ( ! -d $plot_type_dir ) mkdir $plot_type_dir
+if ( ! -d $velocity_type_folder ) mkdir $velocity_type_folder
+if ( ! -d $grid_increment_folder ) mkdir $grid_increment_folder
+cd $grid_increment_folder
+
+# Plot settings
+set output_name = $title.mapview.compare
+set jpg = $output_name.jpg
+set begla = 20.1
+set endla = 26.6
+set beglo = 118.5
+set endlo = 125.5
+
+# Plot
+gmt begin $output_name ps
+    # coastline
+	gmt coast -R$beglo/$endlo/$begla/$endla -JM6i -W0.1p,black -Gdarkseagreen2 \
+		  -Scornflowerblue -Ba2f0.5g1 -BWSNE+t"$title" -LjBR+c20+o1c/1c+f+w50k+u -U -V
+    # marker_intepolated
+    awk '{print $1, $2}' $input_file_path | gmt plot -St$marker_size_interpolated\c -Gred -W0.03c,red
+    # marker_raw
+	awk '{print $1, $2}' $raw_file_path | gmt plot -St$marker_size_raw\c -Gblack -W0.03c,black
+gmt end
+
+# Convert ps to jpg
+echo 'converting ps to jpg'
+convert -density 150 -trim $output_name.ps $jpg
+rm -f $output_name.ps
+echo '--> done'
+eog $jpg

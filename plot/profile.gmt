@@ -1,0 +1,120 @@
+#!/bin/csh
+
+# Input arguments
+if($#argv != 11) then
+  echo
+  echo "profile.gmt [model.txt] [p1: lat] [p1: lon] [p2: lat] [p2: lon] [width] [interval] [unit] [tension_factor] [Vp/Vs/VpVs] [tag: A]"
+  echo "-EX: profile.gmt ../data/RAU1995/RAU1995.Vp.txt 24 120 24 122 20 10 m 0.25 Vp A"
+  echo "-It will draw profile of model data."
+  echo
+  exit 1
+endif
+
+# Parameters settings
+set input_file = $1
+set endla_profile = $2
+set beglo_profile = $3
+set begla_profile = $4
+set endlo_profile = $5
+set width = $6
+set interval = $7
+set unit = $8
+set tension = $9
+set input_velocity_type = $10
+set tag = $11
+set plot_type = profile
+
+# Path
+set base_dir = `pwd | awk -F'/plot' '{print $1}'`
+set input_file_tmp0 = `echo $input_file | awk -F'data/' '{print $2}'`
+if ( $input_file_tmp0 != "" ) then # path for raw data
+  set input_file_path = $base_dir/data/$input_file_tmp0
+  set title = `echo $input_file | awk -F'/' '{print $NF}' | awk -F'_' '{print $1}'`_profile_$tag$tag'\234'
+  set model_name = `echo $input_file | awk -F'data/' '{print $2}' | awk -F'/' '{print $1}'`
+  set output_dir = $base_dir/plot/$model_name
+  set plot_type_dir = $output_dir/$plot_type
+  if ( ! -d $output_dir ) mkdir $output_dir
+  if ( ! -d $plot_type_dir ) mkdir $plot_type_dir
+  cd $plot_type_dir
+else # path for intepolated data
+  set input_file_tmp1 = `echo $input_file | awk -F'statistics/' '{print $2}'`
+  set input_file_path = $base_dir/statistics/$input_file_tmp1
+  set title = `echo $input_file | awk -F'/' '{print $NF}' | awk -F'_' '{print $1}'`_profile_$tag$tag'\234'
+  set model_name = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $1}'`
+  set velocity_type = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $2}'`
+  set grid_increment = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $3}'`
+  set output_dir = $base_dir/plot/$model_name
+  set plot_type_dir = $output_dir/$plot_type
+  set velocity_type_folder = $plot_type_dir/$velocity_type
+  set grid_increment_folder = $velocity_type_folder/$grid_increment
+  if ( ! -d $output_dir ) mkdir $output_dir
+  if ( ! -d $plot_type_dir ) mkdir $plot_type_dir
+  if ( ! -d $velocity_type_folder ) mkdir $velocity_type_folder
+  if ( ! -d $grid_increment_folder ) mkdir $grid_increment_folder
+  cd $grid_increment_folder
+endif
+
+# Plot settings
+set output_name = $model_name\_profile\_$beglo_profile\_$endla_profile\_$endlo_profile\_$begla_profile
+set jpg = $output_name.jpg
+set begla = 20.1
+set endla = 26.6
+set beglo = 118.5
+set endlo = 125.5
+set start_pt = $beglo_profile/$endla_profile
+set end_pt = $endlo_profile/$begla_profile
+set model_dat =  $model_name\_$beglo_profile\_$endla_profile\_$endlo_profile\_$begla_profile.dat
+
+# cpt
+if ( $input_velocity_type == 'Vp' ) then
+  set cpt = VpCpt.cpt
+  gmt makecpt -Cseis -T2/9/0.1 > $cpt
+  set colorbar_x_ticks = xa1
+else if ( $input_velocity_type == 'Vs' ) then
+  set cpt = VsCpt.cpt
+  gmt makecpt -Cseis -T0.2/5/0.1 > $cpt
+  set colorbar_x_ticks = xa1
+else if ( $input_velocity_type == 'VpVs' ) then
+  set cpt = VpVsCpt.cpt
+  gmt makecpt -Cseis -T1.4/2.1/0.1 > $cpt
+  set colorbar_x_ticks = xa0.1
+else
+  echo
+  echo "Err: velocity type $input_velocity_type not exists. Abort!"
+  echo 
+  exit 1
+endif
+
+# Plot
+gmt project $input_file_path -C$start_pt -E$end_pt -Q -W-$width/$width -Fpz > $model_dat
+set dist_min = `awk '{print $1}' $model_dat | sort -u -n | awk 'NR==1{printf "%.6f\n",$NF}'`
+set dist_max = `awk '{print $1}' $model_dat | sort -u -n | awk 'END{printf "%.6f\n",$NF}'`
+set dep_min = `awk '{print $2}' $model_dat | sort -u -n | awk 'NR==1{print $NF}'`
+set dep_max = `awk '{print $2}' $model_dat | sort -u -n | awk 'END{print $NF}'`
+set dist_range = $dist_min/$dist_max
+set dep_range = $dep_min/$dep_max
+echo "<xmin>/<xmax>/<ymin>/<ymax>: $dist_min/$dist_max/$dep_min/$dep_max"
+gmt begin $output_name ps
+    # frame
+    gmt basemap -JX16/-10 -R$dist_range/$dep_range -Ba50 -BWSNE+t"$title"
+    # contour
+    awk '{print $1,$2,$3}' $model_dat | gmt pscontour -C$cpt -Gd100i -I
+    # colorbar
+    gmt colorbar -C$cpt -B$colorbar_x_ticks -By+l'(km/s)'
+    # text(profile)
+    gmt text -N << END
+$dist_min -15 $tag
+$dist_max -15 $tag\234
+END
+    # text(Vp, Vs, VpVs) 
+    gmt text -F+a+jCM+f20p,15,black=0.5p,white << END
+-10 370 0 Vp
+END
+gmt end
+
+# Convert ps to jpg
+echo 'converting ps to jpg'
+convert -density 150 -trim $output_name.ps $jpg
+rm -f $output_name.ps
+echo '--> done'
+eog $jpg

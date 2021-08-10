@@ -1,0 +1,105 @@
+#!/bin/csh
+
+# Input arguments
+if($#argv != 4) then
+  echo
+  echo "contour_compare.gmt [model.txt] [model.txt.interpolateion] [depth] [Vp/Vs/VpVs]"
+  echo "-EX: contour_compare.gmt ../data/RAU1995/RAU1995.Vp.txt ../statistics/RAU1995/Vp/10m/RAU1995_Vp_I10m_T0.25_blockmean.txt 0 Vp"
+  echo "-It will draw contour of model data."
+  echo
+  exit 1
+endif
+
+# Parameters settings
+set raw_file = $1
+set input_file = $2
+set depth = $3
+set input_velocity_type = $4
+set plot_type = contour
+
+# Path
+set base_dir = `pwd | awk -F'/plot' '{print $1}'`
+set raw_file_tmp = `echo $raw_file | awk -F'data/' '{print $2}'`
+set raw_file_path = $base_dir/data/$raw_file_tmp
+set input_file_tmp = `echo $input_file | awk -F'statistics/' '{print $2}'`
+set input_file_path = $base_dir/statistics/$input_file_tmp
+set title = `echo $1 | awk -F'/' '{print $NF}' | awk -F'.txt' '{print $1}'`.D$depth\m
+set model_name = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $1}'`
+set velocity_type = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $2}'`
+set grid_increment = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $3}'`
+set output_dir = $base_dir/plot/$model_name
+set plot_type_dir = $output_dir/$plot_type
+set velocity_type_folder = $plot_type_dir/$velocity_type
+set grid_increment_folder = $velocity_type_folder/$grid_increment
+if ( ! -d $output_dir ) mkdir $output_dir
+if ( ! -d $plot_type_dir ) mkdir $plot_type_dir
+if ( ! -d $velocity_type_folder ) mkdir $velocity_type_folder
+if ( ! -d $grid_increment_folder ) mkdir $grid_increment_folder
+cd $grid_increment_folder
+
+# Plot settings
+set output_name = $title.contour.compare
+set jpg = $output_name.jpg
+set begla = 20.1
+set endla = 26.6
+set beglo = 118.5
+set endlo = 125.5
+set font_contour="6p,25,black"    # 字型 - 等高線
+
+# cpt
+if ( $input_velocity_type == 'Vp' ) then
+  set cpt = VpCpt.cpt
+  gmt makecpt -Cseis -T2/9/0.1 > $cpt
+  set colorbar_x_ticks = xa1
+else if ( $input_velocity_type == 'Vs' ) then
+  set cpt = VsCpt.cpt
+  gmt makecpt -Cseis -T0.2/5/0.1 > $cpt
+  set colorbar_x_ticks = xa1
+else if ( $input_velocity_type == 'VpVs' ) then
+  set cpt = VpVsCpt.cpt
+  gmt makecpt -Cseis -T1.4/2.1/0.1 > $cpt
+  set colorbar_x_ticks = xa0.1
+else
+  echo
+  echo "Err: velocity type $input_velocity_type not exists. Abort!"
+  echo 
+  exit 1
+endif
+
+# Plot
+gmt begin $output_name ps
+## raw data
+    # coastline
+	gmt coast -R$beglo/$endlo/$begla/$endla -JM3i -W0.1p,black -Gdarkseagreen2 \
+		  -Scornflowerblue -Ba2f0.5g1 -BWSne+t"$title\_raw" -LjBR+c20+o1c/1c+f+w100k+u
+    # contour
+	awk '{if($3==depth){print $1,$2,$4}}' depth=$depth $raw_file_path | gmt pscontour -C$cpt -A+f$font_contour+d+ap+g255 -Gd100i -I
+	# marker
+	awk '{print $1, $2}' $input_file_path | gmt plot -Sx0.002c -W0.0000000001c,100/100/100
+	# colorbar
+    gmt colorbar -C$cpt -B$colorbar_x_ticks -By+l'(km/s)'
+    # text
+    gmt text -F+a+jCM+f20p,15,black=0.5p,white << END
+119 20.5 0 $velocity_type
+END
+
+## interpolated data
+    # coastline
+	gmt coast -R$beglo/$endlo/$begla/$endla -JM3i -W0.1p,black -Gdarkseagreen2 \
+		  -Scornflowerblue -Ba2f0.5g1 -BWSne+t"$title" -LjBR+c20+o1c/1c+f+w100k+u -X10
+    # contour
+	awk '{if($3==depth){print $1,$2,$4}}' depth=$depth $input_file_path | gmt pscontour -C$cpt -A+f$font_contour+d+ap+g255 -Gd100i -I
+	# colorbar
+    gmt colorbar -C$cpt -B$colorbar_x_ticks -By+l'(km/s)'
+    # text
+    gmt text -F+a+jCM+f20p,15,black=0.5p,white << END
+119 20.5 0 $velocity_type
+END
+gmt end
+
+# Convert ps to jpg
+echo 'converting ps to jpg'
+convert -density 150 -trim $output_name.ps $jpg
+rm -f $output_name.ps
+echo '--> done'
+eog $jpg

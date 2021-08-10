@@ -1,0 +1,70 @@
+#!/bin/csh
+
+# Input arguments
+if($#argv != 2) then
+  echo
+  echo "mapview.gmt [model.txt] [marker_size]"
+  echo "-EX: mapview.gmt ../statistics/RAU1995/Vp/10m/RAU1995_Vp_I10m_T0.25_blockmean.txt 0.1"
+  echo "-It will draw mapview of velocity model."
+  echo
+  exit 1
+endif
+
+# Parameters settings
+set input_file = $1
+set marker_size = $2
+set plot_type = mapview
+
+# Path
+set base_dir = `pwd | awk -F'/plot' '{print $1}'`
+set input_file_tmp0 = `echo $input_file | awk -F'data/' '{print $2}'`
+if ( $input_file_tmp0 != "" ) then # path for raw data
+  set input_file_path = $base_dir/data/$input_file_tmp0
+  set title = `echo $input_file | awk -F'/' '{print $NF}' | awk -F'.' '{print $1}'`
+  set model_name = `echo $input_file | awk -F'data/' '{print $2}' | awk -F'/' '{print $1}'`
+  set output_dir = $base_dir/plot/$model_name
+  set plot_type_dir = $output_dir/$plot_type
+  if ( ! -d $output_dir ) mkdir $output_dir
+  if ( ! -d $plot_type_dir ) mkdir $plot_type_dir
+  cd $plot_type_dir
+else # path for intepolated data
+  set input_file_tmp1 = `echo $input_file | awk -F'statistics/' '{print $2}'`
+  set input_file_path = $base_dir/statistics/$input_file_tmp1
+  set title = `echo $input_file | awk -F'/' '{print $NF}' | awk -F'.txt' '{print $1}'`
+  set model_name = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $1}'`
+  set velocity_type = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $2}'`
+  set grid_increment = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $3}'`
+  set output_dir = $base_dir/plot/$model_name
+  set plot_type_dir = $output_dir/$plot_type
+  set velocity_type_folder = $plot_type_dir/$velocity_type
+  set grid_increment_folder = $velocity_type_folder/$grid_increment
+  if ( ! -d $output_dir ) mkdir $output_dir
+  if ( ! -d $plot_type_dir ) mkdir $plot_type_dir
+  if ( ! -d $velocity_type_folder ) mkdir $velocity_type_folder
+  if ( ! -d $grid_increment_folder ) mkdir $grid_increment_folder
+  cd $grid_increment_folder
+endif
+
+# Plot settings
+set output_name = $title.mapview
+set jpg = $output_name.jpg
+set begla = 20.1
+set endla = 26.6
+set beglo = 118.5
+set endlo = 125.5
+
+# Plot
+gmt begin $output_name ps
+    # coastline
+	gmt coast -R$beglo/$endlo/$begla/$endla -JM6i -W0.1p,black -Gdarkseagreen2 \
+		  -Scornflowerblue -Ba2f0.5g1 -BWSNE+t"$title" -LjBR+c20+o1c/1c+f+w50k+u -U -V
+    # marker
+	awk '{print $1, $2}' $input_file_path | gmt plot -St$marker_size\c -Gblack -W0.03c,black
+gmt end
+
+# Convert ps to jpg
+echo 'converting ps to jpg'
+convert -density 150 -trim $output_name.ps $jpg
+rm -f $output_name.ps
+echo '--> done'
+eog $jpg

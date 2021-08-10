@@ -1,0 +1,132 @@
+#!/bin/csh
+
+# Input arguments
+if($#argv != 12) then
+  echo
+  echo "profile_compare.gmt [model.txt] [p1: lat] [p1: lon] [p2: lat] [p2: lon] [width] [interval] [unit] [tension_factor] [Vp/Vs/VpVs] [tag: A]"
+  echo "-EX: profile_compare.gmt ../data/RAU1995/RAU1995.Vp.txt ../statistics/RAU1995/Vp/10m/RAU1995_Vp_I10m_T0.25_blockmean.sorted 24 120 24 122 20 10 m 0.25 Vp A"
+  echo "-It will draw profile of model data."
+  echo
+  exit 1
+endif
+
+# Parameters settings
+set raw_file = $1
+set input_file = $2
+set endla_profile = $3
+set beglo_profile = $4
+set begla_profile = $5
+set endlo_profile = $6
+set width = $7
+set interval = $8
+set unit = $9
+set tension = $10
+set input_velocity_type = $11
+set tag = $12
+set plot_type = profile
+
+# Path
+set base_dir = `pwd | awk -F'/plot' '{print $1}'`
+set raw_file_tmp = `echo $raw_file | awk -F'data/' '{print $2}'`
+set raw_file_path = $base_dir/data/$raw_file_tmp
+set input_file_tmp = `echo $input_file | awk -F'statistics/' '{print $2}'`
+set input_file_path = $base_dir/statistics/$input_file_tmp
+set title = `echo $1 | awk -F'/' '{print $NF}' | awk -F'.txt' '{print $1}'`
+set model_name = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $1}'`
+set velocity_type = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $2}'`
+set grid_increment = `echo $input_file | awk -F'statistics/' '{print $2}' | awk -F'/' '{print $3}'`
+set output_dir = $base_dir/plot/$model_name
+set plot_type_dir = $output_dir/$plot_type
+set velocity_type_folder = $plot_type_dir/$velocity_type
+set grid_increment_folder = $velocity_type_folder/$grid_increment
+if ( ! -d $output_dir ) mkdir $output_dir
+if ( ! -d $plot_type_dir ) mkdir $plot_type_dir
+if ( ! -d $velocity_type_folder ) mkdir $velocity_type_folder
+if ( ! -d $grid_increment_folder ) mkdir $grid_increment_folder
+cd $grid_increment_folder
+
+# Plot settings
+set output_name = $model_name\_profile\_$beglo_profile\_$endla_profile\_$endlo_profile\_$begla_profile\_W$width\km
+set jpg = $output_name.compare.jpg
+set begla = 20.1
+set endla = 26.6
+set beglo = 118.5
+set endlo = 125.5
+set start_pt = $beglo_profile/$endla_profile
+set end_pt = $endlo_profile/$begla_profile
+set model_dat_raw = $model_name\_$beglo_profile\_$endla_profile\_$endlo_profile\_$begla_profile.raw.dat
+set model_dat =  $model_name\_$beglo_profile\_$endla_profile\_$endlo_profile\_$begla_profile.dat
+
+# cpt
+if ( $input_velocity_type == 'Vp' ) then
+  set cpt = VpCpt.cpt
+  gmt makecpt -Cseis -T2/9/0.1 > $cpt
+  set colorbar_x_ticks = xa1
+else if ( $input_velocity_type == 'Vs' ) then
+  set cpt = VsCpt.cpt
+  gmt makecpt -Cseis -T0.2/5/0.1 > $cpt
+  set colorbar_x_ticks = xa1
+else if ( $input_velocity_type == 'VpVs' ) then
+  set cpt = VpVsCpt.cpt
+  gmt makecpt -Cseis -T1.4/2.1/0.1 > $cpt
+  set colorbar_x_ticks = xa0.1
+else
+  echo
+  echo "Err: velocity type $input_velocity_type not exists. Abort!"
+  echo 
+  exit 1
+endif
+
+# Plot
+gmt project $raw_file_path -C$start_pt -E$end_pt -Q -W-$width/$width -Fpz > $model_dat_raw
+gmt project $input_file_path -C$start_pt -E$end_pt -Q -W-$width/$width -Fpz > $model_dat
+set dist_min = `awk '{print $1}' $model_dat | sort -u -n | awk 'NR==1{printf "%.6f\n",$NF}'`
+set dist_max = `awk '{print $1}' $model_dat | sort -u -n | awk 'END{printf "%.6f\n",$NF}'`
+set dep_min = `awk '{print $2}' $model_dat | sort -u -n | awk 'NR==1{print $NF}'`
+set dep_max = `awk '{print $2}' $model_dat | sort -u -n | awk 'END{print $NF}'`
+set dist_range = $dist_min/$dist_max
+#set dep_range = $dep_min/$dep_max
+set dep_range = $dep_min/150
+echo "<xmin>/<xmax>/<ymin>/<ymax>: $dist_min/$dist_max/$dep_min/$dep_max"
+gmt begin $output_name ps
+## raw data
+    # frame
+    gmt basemap -JX8/-5 -R$dist_range/$dep_range -Ba50 -BWSne+t"$title\_raw"
+    # contour
+    awk '{print $1,$2,$3}' $model_dat_raw | gmt pscontour -C$cpt -Gd100i -I
+    # colorbar
+    gmt colorbar -C$cpt -B$colorbar_x_ticks -By+l'(km/s)'
+    # text(profile)
+    gmt text -N << END
+$dist_min -15 $tag
+$dist_max -15 $tag\234
+END
+    # text(Vp, Vs, VpVs) 
+    gmt text -F+a+jCM+f20p,15,black=0.5p,white << END
+-10 370 0 $velocity_type
+END
+
+## interpolated data
+    # frame
+    gmt basemap -JX8/-5 -R$dist_range/$dep_range -Ba50 -BWSne+t"$title" -X9.5
+    # contour
+    awk '{print $1,$2,$3}' $model_dat | gmt pscontour -C$cpt -Gd100i -I
+    # colorbar
+    gmt colorbar -C$cpt -B$colorbar_x_ticks -By+l'(km/s)'
+    # text(profile)
+    gmt text -N << END
+$dist_min -15 $tag
+$dist_max -15 $tag\234
+END
+    # text(Vp, Vs, VpVs) 
+    gmt text -F+a+jCM+f20p,15,black=0.5p,white << END
+-10 370 0 $velocity_type
+END
+gmt end
+
+# Convert ps to jpg
+echo 'converting ps to jpg'
+convert -density 150 -trim $output_name.ps $jpg
+rm -f $output_name.ps
+echo '--> done'
+eog $jpg
