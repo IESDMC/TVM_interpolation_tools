@@ -59,7 +59,7 @@ The figures will be stored in the /plot/[velocity model]/.
       <td><img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/contour/Vp/10m/RAU1995.Vp.D0m.contour.compare.jpg?raw=true" width="100%"></td>
    </tr>
    <tr>
-      <td style="text-align: center;">contour</td>
+      <td><center>contour</center></td>
       <td style="text-align: center;">contour_compare</td>
    </tr>
       <tr>
