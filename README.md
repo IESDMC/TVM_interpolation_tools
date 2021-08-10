@@ -59,7 +59,7 @@ The figures will be stored in the /plot/[velocity model]/.
       <td><img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/contour/Vp/10m/RAU1995.Vp.D0m.contour.compare.jpg?raw=true" width="100%"></td>
    </tr>
    <tr>
-      <center>contour</center>
+      <td style="text-align: center;">contour</td>
       <td style="text-align: center;">contour_compare</td>
    </tr>
       <tr>
@@ -67,7 +67,7 @@ The figures will be stored in the /plot/[velocity model]/.
       <td><img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/profile/Vp/10m/RAU1995_profile_120_24_122_24_W20km.compare.jpg?raw=true" width="100%"></td>
    </tr>
    <tr>
-      <td style="text-align: center;">map_profile</td>
+      <td align="center">map_profile</td>
       <td style="text-align: center;">profile_compare</td>
    </tr>
 </table>
