@@ -73,6 +73,7 @@ The figures will be stored in the /plot/[velocity model]/.
 </table>
 
 ## Command used
+[The Generic Mapping Tools Documentation](https://docs.generic-mapping-tools.org/latest/)
 - coast
 - plot
 - pscontour
