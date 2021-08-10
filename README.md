@@ -11,7 +11,7 @@ This tool help interpolate velocity model from [Taiwan Velocity Models](https://
 
 ## Usage
 ### preprocess
-- put velocity model text file in the /data/[velocity model]/
+- put velocity model text file in the `/data/[velocity model]/`
 - revise velocity model to the following format
 ```
 # model.Vp.txt
@@ -24,7 +24,7 @@ longitude latitude depth Vs
 longitude latitude depth VpVs
 ```
 ### process
-The result will be stored in the /statistics/[velocity model]/.
+The result will be stored in the `/statistics/[velocity model]/`
 - run /process/interpolate_surface.csh
 ```
 csh interpolate_surface.csh [model.txt] [Vp/Vs/VpVs] [interval] [unit] [tension_factor] [blockmean]
@@ -35,7 +35,7 @@ e.g. interpolate_surface.csh ../data/RAU1995/RAU1995.Vp.txt Vp 10 m 0.25 1"
 # [blockmean]: 0 or 1"
 ```
 ### plot
-The figures will be stored in the /plot/[velocity model]/.
+The figures will be stored in the `/plot/[velocity model]/`
 - /plot/mapview.gmt: the velocity model distribution
 - /plot/mapview_compare.gmt: the differences of model distribution between raw data and interpolated data
 - /plot/contour.gmt: the contour of velocity model
