@@ -45,8 +45,16 @@ The figures will be stored in the /plot/[velocity model]/.
 - /plot/profile_compare.gmt: the differences of profile between raw data and interpolated data
 
 ### results
-| <img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/mapview/Vp/10m/RAU1995_Vp_I10m_T0.25_blockmean.mapview.jpg?raw=true" width="50%">  | <img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/mapview/Vp/10m/RAU1995.mapview.compare.jpg?raw=true" width="50%">  |
-| mapview  | mapview_compare  |
+<table>
+   <tr>
+      <td> <img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/mapview/Vp/10m/RAU1995_Vp_I10m_T0.25_blockmean.mapview.jpg?raw=true" width="40%"></td>
+      <td><img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/mapview/Vp/10m/RAU1995.mapview.compare.jpg?raw=true" width="40%"></td>
+   </tr>
+   <tr>
+      <td>mapview</td>
+      <td>mapview_compare</td>
+   </tr>
+</table>
 
 ## Command used
 - coast
