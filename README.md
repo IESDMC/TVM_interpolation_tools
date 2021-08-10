@@ -45,30 +45,30 @@ The figures will be stored in the /plot/[velocity model]/.
 - /plot/profile_compare.gmt: the differences of profile between raw data and interpolated data
 
 ### results
-<table>
+<table align="center">
    <tr>
       <td> <img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/mapview/Vp/10m/RAU1995_Vp_I10m_T0.25_blockmean.mapview.jpg?raw=true" width="100%"></td>
       <td><img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/mapview/Vp/10m/RAU1995.mapview.compare.jpg?raw=true" width="100%"></td>
    </tr>
    <tr>
-      <td style="text-align: center">mapview</td>
-      <td style="text-align: center">mapview_compare</td>
+      <td>mapview</td>
+      <td>mapview_compare</td>
    </tr>
       <tr>
       <td> <img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/contour/Vp/10m/RAU1995_Vp_I10m_T0.25_blockmean_D0.contour.jpg?raw=true" width="100%"></td>
       <td><img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/contour/Vp/10m/RAU1995.Vp.D0m.contour.compare.jpg?raw=true" width="100%"></td>
    </tr>
    <tr>
-      <td style="text-align: center">contour</td>
-      <td style="text-align: center">contour_compare</td>
+      <td>contour</td>
+      <td>contour_compare</td>
    </tr>
       <tr>
       <td> <img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/profile/Vp/10m/RAU1995_profile_120_24_122_24_map.jpg?raw=true" width="100%"></td>
       <td><img src="https://github.com/IESDMC/TVM_interpolation_tools/blob/main/plot/RAU1995/profile/Vp/10m/RAU1995_profile_120_24_122_24_W20km.compare.jpg?raw=true" width="100%"></td>
    </tr>
    <tr>
-      <td style="text-align: center">map_profile</td>
-      <td style="text-align: center">profile_compare</td>
+      <td>map_profile</td>
+      <td>profile_compare</td>
    </tr>
 </table>
 
